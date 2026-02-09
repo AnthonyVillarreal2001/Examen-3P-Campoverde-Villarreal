@@ -1,0 +1,56 @@
+{
+  "info": {
+    "name": "Booking GraphQL",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "List bookings",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "http://localhost:5000/graphql", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["graphql"] },
+        "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ bookings { id servicio fecha estado fechaFormateada } }\"\n}" }
+      }
+    },
+    {
+      "name": "Create booking",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "http://localhost:5000/graphql", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["graphql"] },
+        "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation { createBooking(fecha:\\\"2025-12-01T15:00:00-05:00\\\", servicio:\\\"Spa\\\") { id servicio estado fecha } }\"\n}" }
+      }
+    },
+    {
+      "name": "Cancel booking",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "http://localhost:5000/graphql", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["graphql"] },
+        "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation { cancelBooking(id:\\\"<ID>\\\") { id estado canceladaEn } }\"\n}" }
+      }
+    },
+    {
+      "name": "Delete booking",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "http://localhost:5000/graphql", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["graphql"] },
+        "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation { deleteBooking(id:\\\"<ID>\\\") }\"\n}" }
+      }
+    }
+  ]
+}

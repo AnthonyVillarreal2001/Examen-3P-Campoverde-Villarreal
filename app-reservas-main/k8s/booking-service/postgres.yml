@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: booking-postgres
+  namespace: reservas
+  labels:
+    app: booking-postgres
+spec:
+  serviceName: booking-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking-postgres
+  template:
+    metadata:
+      labels:
+        app: booking-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_DB
+              value: bookingdb
+            - name: POSTGRES_USER
+              value: booking
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: booking-secret
+                  key: POSTGRES_PASSWORD
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "pg_isready -U booking -d bookingdb"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "pg_isready -U booking -d bookingdb"]
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 6
+  volumeClaimTemplates:
+    - metadata:
+        name: pgdata
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-postgres
+  namespace: reservas
+  labels:
+    app: booking-postgres
+spec:
+  selector:
+    app: booking-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres

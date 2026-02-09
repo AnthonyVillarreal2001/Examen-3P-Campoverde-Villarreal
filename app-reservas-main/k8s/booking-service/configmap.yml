@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: booking-config
+  namespace: reservas
+  labels:
+    app: booking-service
+    tier: backend
+    component: config
+data:
+  POSTGRES_HOST: booking-postgres
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: bookingdb
+  POSTGRES_USER: booking
+  USER_SERVICE_URL: http://user-service.reservas.svc.cluster.local:5003
+  NOTIFICATION_SERVICE_URL: http://notification-service.reservas.svc.cluster.local:5002

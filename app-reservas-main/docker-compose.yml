@@ -1,0 +1,111 @@
+services:
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    ports:
+      - "8025:8025" # UI
+      - "1025:1025" # SMTP
+  postgres:
+    image: postgres:16
+    restart: always
+    environment:
+      - POSTGRES_DB=bookingdb
+      - POSTGRES_USER=booking
+      - POSTGRES_PASSWORD=booking
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U booking -d bookingdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  auth-service:
+    build:
+      context: ./auth-service
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./auth-service:/app
+      - /app/node_modules
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/authdb
+      - JWT_SECRET=secreto-super-seguro
+    depends_on:
+      - mongo
+
+  booking-service:
+    build:
+      context: ./booking-service
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./booking-service:/app
+      - /app/node_modules
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=bookingdb
+      - POSTGRES_USER=booking
+      - POSTGRES_PASSWORD=booking
+      - USER_SERVICE_URL=http://user-service:5003
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5002
+      - JWT_SECRET=secreto-super-seguro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: ./notification-service
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./notification-service:/app
+      - /app/node_modules
+    environment:
+      - EMAIL_HOST=mailhog
+      - EMAIL_PORT=1025
+      - EMAIL_USER=mailhog
+      - EMAIL_PASS=mailhog
+    depends_on:
+      - mongo
+      - mailhog
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    restart: always
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - MONGO_URI=mongodb://mongo:27017/user-service-db
+      - JWT_SECRET=secreto-super-seguro
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - booking-service
+
+volumes:
+  mongo_data:
+  pg_data:
