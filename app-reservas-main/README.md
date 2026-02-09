@@ -44,9 +44,9 @@ cd reservas-ec
 🔐 Frontend (frontend/.env.production.local)
 
 ```bash
-NEXT_PUBLIC_API_URL=/api/auth
-NEXT_PUBLIC_BOOKING_URL=/api/bookings
-NEXT_PUBLIC_USER_URL=/api/users
+NEXT_PUBLIC_API_URL=http://localhost:4000/api
+NEXT_PUBLIC_BOOKING_URL=http://localhost:5001/graphql
+NEXT_PUBLIC_USER_URL=http://localhost:5003
 ```
 
 🔐 Backend .env (cada microservicio)
